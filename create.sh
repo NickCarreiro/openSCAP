@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Script: create.sh
-# Purpose: Apply Ubuntu 22.04 DISA STIG SCAP benchmark to Ubuntu 24.04 using OpenSCAP
+# Purpose: Apply Ubuntu 22.04 DISA STIG SCAP benchmark using OpenSCAP
 # Author: Grok (assisted by xAI)
 # Date: July 15, 2025
 # Usage: Run as root (sudo -i) from /home/everest/openSCAP/openSCAP
-# WARNING: Test in non-production environments first. Using mismatched STIG content with fake CPEs.
+# WARNING: Test in non-production environments first
 
 set -e
 
@@ -14,13 +14,11 @@ STIG_URL="https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_CAN_Ubuntu_22-
 STIG_DIR="/home/everest/openSCAP/openSCAP/stig_content"
 LOG_FILE="/var/log/stig_auto_remediation_$(date +%F_%H-%M-%S).log"
 BACKUP_DIR="/home/everest/openSCAP/openSCAP/stig_backup_$(date +%F_%H-%M-%S)"
-CPE_OVERRIDE_FILE="/etc/oscap-force-cpe.txt"
-FAKE_CPE="cpe:/o:canonical:ubuntu_linux:22.04"
 PROFILE_ID="xccdf_mil.disa.stig_profile_MAC-3_Public"
 
 # Logging
 exec > >(tee -a "$LOG_FILE") 2>&1
-echo "=== STIG Auto-Remediation Script for Ubuntu 24.04 using 22.04 STIG ==="
+echo "=== STIG Auto-Remediation Script for Ubuntu 22.04 ==="
 echo "Started at: $(date)"
 
 check_root() {
@@ -28,12 +26,6 @@ check_root() {
         echo "ERROR: This script must be run as root."
         exit 1
     fi
-}
-
-fake_cpe_platform() {
-    echo "Faking system CPE platform to: $FAKE_CPE"
-    echo "$FAKE_CPE" > "$CPE_OVERRIDE_FILE"
-    echo "Written to $CPE_OVERRIDE_FILE"
 }
 
 download_stig_content() {
@@ -77,7 +69,6 @@ audit_system() {
         --report "$AUDIT_REPORT" \
         --oval-results \
         --skip-valid \
-        --cpe "$CPE_OVERRIDE_FILE" \
         "$SCAP_FILE"
 
     echo "Initial audit complete. Results: $AUDIT_RESULTS"
@@ -115,7 +106,6 @@ verify_compliance() {
         --report "$POST_AUDIT_REPORT" \
         --oval-results \
         --skip-valid \
-        --cpe "$CPE_OVERRIDE_FILE" \
         "$SCAP_FILE"
 
     echo "Post-remediation audit complete. Report: $POST_AUDIT_REPORT"
@@ -124,13 +114,11 @@ verify_compliance() {
 cleanup() {
     echo "Cleanup: keeping all output files for review."
     # Uncomment below if you want to auto-delete intermediate files
-    # rm -f "$CPE_OVERRIDE_FILE"
     # rm -f "$STIG_DIR/stig_ubuntu_22.04.zip"
 }
 
 # === Main Execution ===
 check_root
-fake_cpe_platform
 download_stig_content
 create_backup
 install_openscap
