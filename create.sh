@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# Script: stig_ubuntu_24.04_auto_remediation.sh
-# Purpose: Automate DISA STIG remediation for Ubuntu 24.04 LTS using OpenSCAP
+# Script: stig_ubuntu_24.04_auto_remediation_with_download.sh
+# Purpose: Automate DISA STIG remediation for Ubuntu 24.04 LTS using OpenSCAP, including STIG content download
 # Author: Grok (assisted by xAI)
 # Date: July 15, 2025
-# Usage: Run as root (sudo -i) with STIG SCAP content extracted
-# Prerequisites: Extracted STIG .zip in /root/stig_content
+# Usage: Run as root (sudo -i)
+# Prerequisites: Internet access for downloading STIG content
 # WARNING: Test in a non-production environment first!
 
 # Exit on error
 set -e
 
 # Configuration variables
-STIG_DIR="/root/stig_content"  # Directory where STIG .zip is extracted
+STIG_URL="https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_Benchmark_V1R1.zip"
+STIG_DIR="/root/stig_content"
 SCAP_FILE="$STIG_DIR/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_1-1_Benchmark.xml"
 LOG_FILE="/var/log/stig_auto_remediation_$(date +%F_%H-%M-%S).log"
 BACKUP_DIR="/root/stig_backup_$(date +%F_%H-%M-%S)"
@@ -29,13 +30,32 @@ check_root() {
     fi
 }
 
-# Function to verify STIG content exists
-check_stig_content() {
+# Function to download and extract STIG content
+download_stig_content() {
+    echo "Downloading STIG SCAP content from $STIG_URL..."
+    apt-get update -y
+    apt-get install -y wget unzip || {
+        echo "ERROR: Failed to install wget and unzip."
+        exit 1
+    }
+    
+    mkdir -p "$STIG_DIR"
+    wget -O "$STIG_DIR/stig_ubuntu_24.04.zip" "$STIG_URL" || {
+        echo "ERROR: Failed to download STIG content from $STIG_URL."
+        exit 1
+    }
+    
+    echo "Extracting STIG content..."
+    unzip -o "$STIG_DIR/stig_ubuntu_24.04.zip" -d "$STIG_DIR" || {
+        echo "ERROR: Failed to extract STIG content."
+        exit 1
+    }
+    
     if [ ! -f "$SCAP_FILE" ]; then
-        echo "ERROR: STIG SCAP file not found at $SCAP_FILE. Ensure .zip is extracted to $STIG_DIR."
+        echo "ERROR: STIG SCAP file not found at $SCAP_FILE after extraction."
         exit 1
     fi
-    echo "STIG SCAP content verified at $SCAP_FILE."
+    echo "STIG content downloaded and extracted to $STIG_DIR."
 }
 
 # Function to create a system backup
@@ -53,7 +73,6 @@ create_backup() {
 # Function to install OpenSCAP
 install_openscap() {
     echo "Checking and installing OpenSCAP tools..."
-    apt-get update -y
     apt-get install -y openscap-scanner libopenscap8 || {
         echo "ERROR: Failed to install OpenSCAP tools."
         exit 1
@@ -94,7 +113,7 @@ generate_and_apply_remediation() {
     if [ ! -f "$REMEDIATION_SCRIPT" ]; then
         echo "ERROR: Remediation script not created at $REMEDIATION_SCRIPT."
         exit 1
-    fi
+    }
     
     echo "Applying remediation script..."
     chmod +x "$REMEDIATION_SCRIPT"
@@ -124,6 +143,7 @@ verify_compliance() {
 cleanup() {
     echo "Cleaning up temporary files (optional)..."
     # Uncomment to remove temporary files if desired
+    # rm -f "$STIG_DIR/stig_ubuntu_24.04.zip"
     # rm -f "$REMEDIATION_SCRIPT"
     # rm -f "$AUDIT_RESULTS" "$POST_AUDIT_RESULTS"
     echo "Cleanup completed (temporary files retained for review)."
@@ -133,7 +153,7 @@ cleanup() {
 echo "Starting STIG auto-remediation process for Ubuntu 24.04 LTS..."
 
 check_root
-check_stig_content
+download_stig_content
 create_backup
 install_openscap
 audit_system
