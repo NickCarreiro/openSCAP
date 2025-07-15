@@ -17,7 +17,7 @@ bash
 set -e
 
 # Configuration variables
-STIG_URL="https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_Benchmark_V1R1.zip"
+STIG_URL="https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_CAN_Ubuntu_24-04_LTS_V1R1_STIG.zip"
 STIG_DIR="/home/everest/openSCAP/openSCAP/stig_content"
 SCAP_FILE="$STIG_DIR/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_1-1_Benchmark.xml"
 LOG_FILE="/var/log/stig_auto_remediation_$(date +%F_%H-%M-%S).log"
