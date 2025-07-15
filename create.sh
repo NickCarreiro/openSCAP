@@ -2,7 +2,7 @@
 
 # Script: create.sh
 # Purpose: Automate DISA STIG remediation for Ubuntu 24.04 LTS using OpenSCAP, including STIG content download
-# Author: Grok (assisted by xAI)
+# Author: N.Carr
 # Date: July 15, 2025
 # Usage: Run as root (sudo -i) from /home/everest/openSCAP/openSCAP
 # Prerequisites: Internet access for downloading STIG content
