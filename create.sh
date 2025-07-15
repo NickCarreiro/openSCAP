@@ -1,10 +1,15 @@
+bash
+
+
+
+
 #!/bin/bash
 
-# Script: stig_ubuntu_24.04_auto_remediation_with_download.sh
+# Script: create.sh
 # Purpose: Automate DISA STIG remediation for Ubuntu 24.04 LTS using OpenSCAP, including STIG content download
 # Author: Grok (assisted by xAI)
 # Date: July 15, 2025
-# Usage: Run as root (sudo -i)
+# Usage: Run as root (sudo -i) from /home/everest/openSCAP/openSCAP
 # Prerequisites: Internet access for downloading STIG content
 # WARNING: Test in a non-production environment first!
 
@@ -13,10 +18,10 @@ set -e
 
 # Configuration variables
 STIG_URL="https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_Benchmark_V1R1.zip"
-STIG_DIR="/root/stig_content"
+STIG_DIR="/home/everest/openSCAP/openSCAP/stig_content"
 SCAP_FILE="$STIG_DIR/U_Canonical_Ubuntu_24-04_LTS_STIG_SCAP_1-1_Benchmark.xml"
 LOG_FILE="/var/log/stig_auto_remediation_$(date +%F_%H-%M-%S).log"
-BACKUP_DIR="/root/stig_backup_$(date +%F_%H-%M-%S)"
+BACKUP_DIR="/home/everest/openSCAP/openSCAP/stig_backup_$(date +%F_%H-%M-%S)"
 
 # Log all output to file and console
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -83,8 +88,8 @@ install_openscap() {
 # Function to run initial compliance audit
 audit_system() {
     echo "Running initial STIG compliance audit..."
-    AUDIT_REPORT="/root/stig_audit_report_$(date +%F_%H-%M-%S).html"
-    AUDIT_RESULTS="/root/stig_audit_results_$(date +%F_%H-%M-%S).xml"
+    AUDIT_REPORT="/home/everest/openSCAP/openSCAP/stig_audit_report_$(date +%F_%H-%M-%S).html"
+    AUDIT_RESULTS="/home/everest/openSCAP/openSCAP/stig_audit_results_$(date +%F_%H-%M-%S).xml"
     
     oscap xccdf eval \
         --profile xccdf_org.ssgproject.content_profile_stig \
@@ -99,7 +104,7 @@ audit_system() {
 # Function to generate and apply remediation script
 generate_and_apply_remediation() {
     echo "Generating remediation script..."
-    REMEDIATION_SCRIPT="/root/stig_remediation_$(date +%F_%H-%M-%S).sh"
+    REMEDIATION_SCRIPT="/home/everest/openSCAP/openSCAP/stig_remediation_$(date +%F_%H-%M-%S).sh"
     
     oscap xccdf generate fix \
         --profile xccdf_org.ssgproject.content_profile_stig \
@@ -126,8 +131,8 @@ generate_and_apply_remediation() {
 # Function to verify compliance post-remediation
 verify_compliance() {
     echo "Running post-remediation audit..."
-    POST_AUDIT_REPORT="/root/stig_post_audit_report_$(date +%F_%H-%M-%S).html"
-    POST_AUDIT_RESULTS="/root/stig_post_audit_results_$(date +%F_%H-%M-%S).xml"
+    POST_AUDIT_REPORT="/home/everest/openSCAP/openSCAP/stig_post_audit_report_$(date +%F_%H-%M-%S).html"
+    POST_AUDIT_RESULTS="/home/everest/openSCAP/openSCAP/stig_post_audit_results_$(date +%F_%H-%M-%S).xml"
     
     oscap xccdf eval \
         --profile xccdf_org.ssgproject.content_profile_stig \
