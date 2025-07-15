@@ -142,7 +142,7 @@ verify_compliance() {
         --results "$POST_AUDIT_RESULTS" \
         --report "$POST_AUDIT_REPORT" \
         "$SCAP_FILE"
-    if [ $? -ne 0 Babel
+    if [ $? -ne 0 ]; then
         echo "WARNING: Post-remediation audit completed with errors. Check $POST_AUDIT_REPORT."
     fi
     echo "Post-remediation audit completed. Report saved to $POST_AUDIT_REPORT."
