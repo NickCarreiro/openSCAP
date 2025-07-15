@@ -1,8 +1,3 @@
-bash
-
-
-
-
 #!/bin/bash
 
 # Script: create.sh
@@ -39,22 +34,25 @@ check_root() {
 download_stig_content() {
     echo "Downloading STIG SCAP content from $STIG_URL..."
     apt-get update -y
-    apt-get install -y wget unzip || {
+    apt-get install -y wget unzip
+    if [ $? -ne 0 ]; then
         echo "ERROR: Failed to install wget and unzip."
         exit 1
-    }
+    fi
     
     mkdir -p "$STIG_DIR"
-    wget -O "$STIG_DIR/stig_ubuntu_24.04.zip" "$STIG_URL" || {
+    wget -O "$STIG_DIR/stig_ubuntu_24.04.zip" "$STIG_URL"
+    if [ $? -ne 0 ]; then
         echo "ERROR: Failed to download STIG content from $STIG_URL."
         exit 1
-    }
+    fi
     
     echo "Extracting STIG content..."
-    unzip -o "$STIG_DIR/stig_ubuntu_24.04.zip" -d "$STIG_DIR" || {
+    unzip -o "$STIG_DIR/stig_ubuntu_24.04.zip" -d "$STIG_DIR"
+    if [ $? -ne 0 ]; then
         echo "ERROR: Failed to extract STIG content."
         exit 1
-    }
+    fi
     
     if [ ! -f "$SCAP_FILE" ]; then
         echo "ERROR: STIG SCAP file not found at $SCAP_FILE after extraction."
@@ -69,19 +67,21 @@ create_backup() {
     mkdir -p "$BACKUP_DIR"
     cp -r /etc "$BACKUP_DIR/etc"
     cp -r /var/log "$BACKUP_DIR/var_log"
-    tar -czf "$BACKUP_DIR/system_backup.tar.gz" /etc /var/log || {
+    tar -czf "$BACKUP_DIR/system_backup.tar.gz" /etc /var/log
+    if [ $? -ne 0 ]; then
         echo "WARNING: Backup creation encountered issues. Proceeding with caution."
-    }
+    fi
     echo "Backup created at $BACKUP_DIR."
 }
 
 # Function to install OpenSCAP
 install_openscap() {
     echo "Checking and installing OpenSCAP tools..."
-    apt-get install -y openscap-scanner libopenscap8 || {
+    apt-get install -y openscap-scanner libopenscap8
+    if [ $? -ne 0 ]; then
         echo "ERROR: Failed to install OpenSCAP tools."
         exit 1
-    }
+    fi
     echo "OpenSCAP tools installed successfully."
 }
 
@@ -95,9 +95,10 @@ audit_system() {
         --profile xccdf_org.ssgproject.content_profile_stig \
         --results "$AUDIT_RESULTS" \
         --report "$AUDIT_REPORT" \
-        "$SCAP_FILE" || {
+        "$SCAP_FILE"
+    if [ $? -ne 0 ]; then
         echo "WARNING: Initial audit completed with errors. Check $AUDIT_REPORT for details."
-    }
+    fi
     echo "Initial audit completed. Report saved to $AUDIT_REPORT."
 }
 
@@ -110,21 +111,23 @@ generate_and_apply_remediation() {
         --profile xccdf_org.ssgproject.content_profile_stig \
         --fix-type bash \
         --output "$REMEDIATION_SCRIPT" \
-        "$AUDIT_RESULTS" || {
+        "$AUDIT_RESULTS"
+    if [ $? -ne 0 ]; then
         echo "ERROR: Failed to generate remediation script."
         exit 1
-    }
+    fi
     
     if [ ! -f "$REMEDIATION_SCRIPT" ]; then
         echo "ERROR: Remediation script not created at $REMEDIATION_SCRIPT."
         exit 1
-    }
+    fi
     
     echo "Applying remediation script..."
     chmod +x "$REMEDIATION_SCRIPT"
-    bash "$REMEDIATION_SCRIPT" || {
+    bash "$REMEDIATION_SCRIPT"
+    if [ $? -ne 0 ]; then
         echo "WARNING: Remediation script encountered errors. Review $LOG_FILE and $REMEDIATION_SCRIPT."
-    }
+    fi
     echo "Remediation script applied. Check $REMEDIATION_SCRIPT for applied changes."
 }
 
@@ -138,9 +141,10 @@ verify_compliance() {
         --profile xccdf_org.ssgproject.content_profile_stig \
         --results "$POST_AUDIT_RESULTS" \
         --report "$POST_AUDIT_REPORT" \
-        "$SCAP_FILE" || {
+        "$SCAP_FILE"
+    if [ $? -ne 0 Babel
         echo "WARNING: Post-remediation audit completed with errors. Check $POST_AUDIT_REPORT."
-    }
+    fi
     echo "Post-remediation audit completed. Report saved to $POST_AUDIT_REPORT."
 }
 
