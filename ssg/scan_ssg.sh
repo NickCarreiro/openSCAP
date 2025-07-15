@@ -5,6 +5,8 @@ DS_XML="./ssg/content/scap-security-guide-0.1.77/ssg-ubuntu2204-ds.xml"
 PROFILE="xccdf_org.ssgproject.content_profile_stig"
 TIMESTAMP=$(date +%F_%H-%M-%S)
 
+mkdir reports
+
 oscap xccdf eval \
   --profile "$PROFILE" \
   --results "reports/ssg_scan_results_$TIMESTAMP.xml" \
